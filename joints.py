@@ -17,15 +17,15 @@ class ConstantJoint:
         self.screen = screen 
         self.pos = pos
         self.id = id
-        self.connections = []
+        self.connection = None
     
     def connect(self, joint):
-        self.connections.append(joint)
+        self.connection = joint
     
     def draw(self):
         pygame.draw.circle(self.screen, "white", self.pos, 5)
-        if self.connections:
-            pygame.draw.line(screen, "white", self.connections[0].pos, self.pos, 3)
+        if self.connection:
+            pygame.draw.line(screen, "white", self.connection.pos, self.pos, 3)
 
 
 class MovingJoint(ConstantJoint):
@@ -38,9 +38,7 @@ class MovingJoint(ConstantJoint):
         self.distance = None
     
     def update_position(self):
-        if len(self.connections) > 1:
-            return
-        connected = self.connections[0]
+        connected = self.connection
         x = self.pos[0]
         y = self.pos[1]
         x_c = connected.pos[0]
@@ -83,7 +81,7 @@ def main():
                 run = False
 
         moving_joint.update_position()
-        moving_joint2.connections[0] = moving_joint
+        moving_joint2.connection = moving_joint
         moving_joint2.update_position()
 
         moving_joint.draw()

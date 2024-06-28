@@ -21,7 +21,7 @@ class HookTip(MovingJoint):
             mask_pos[0] - self.pos[0] +100,
             mask_pos[1] - self.pos[1],
         )
-        print(relative_pos)
+        print(self.hook_mask.overlap(mask, relative_pos))
         return self.hook_mask.overlap(mask, relative_pos)
 
 
