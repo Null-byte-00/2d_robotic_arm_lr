@@ -55,7 +55,7 @@ def main():
                 run = False
 
         moving_joint.update_position()
-        moving_joint2.connections[0] = moving_joint
+        moving_joint2.connection = moving_joint
         moving_joint2.update_position()
 
         moving_joint2.draw()
