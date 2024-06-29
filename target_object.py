@@ -110,7 +110,7 @@ class TargetObject:
         self.screen.blit(self.left, self.left_pos)
         #pygame.draw.circle(self.screen, 'purple', self.hook_point, 10)
         #pygame.draw.circle(self.screen, 'purple', (200, self.grab_height), 10)
-        pygame.draw.circle(self.screen, 'purple', (self.pos[0], 200), 10)
+        #pygame.draw.circle(self.screen, 'purple', (self.pos[0], 200), 10)
 
     def colides_with_hook(self, hook: HookTip):
         overlabs = None
@@ -132,7 +132,7 @@ class TargetObject:
 
 
 hook_tip = HookTip(screen, (250, 50), 3,  speed=0.1)
-target = TargetObject(screen, (100, 100),hook_tip, x_speed=1.5)
+target = TargetObject(screen, (100, 100),hook_tip, x_speed=3)
 stand =  Stand(screen, 100, hook_tip)
 target.add_stand(stand)
 
