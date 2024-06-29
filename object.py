@@ -1,4 +1,5 @@
 import pygame
+from hook import HookTip
 import math
 
 pygame.init()
@@ -13,7 +14,7 @@ timer = pygame.time.Clock()
 
 
 class TargetObject:
-    def __init__(self, screen, pos, length=30, thicness=100, y_speed=0.0,x_speed=4.0, retention=0.99) -> None:
+    def __init__(self, screen, pos, length=30, thicness=100, y_speed=0.0,x_speed=0.0, retention=0.99) -> None:
         self.retention = retention
         self.x_speed = x_speed
         self.y_speed = y_speed
@@ -52,21 +53,45 @@ class TargetObject:
 
     def x_force(self, force):
         self.x_speed += force
+    
+    def check_x_force(self):
+        self.x_speed = self.x_speed * self.retention
+        self.pos = (
+            self.pos[0] + self.x_speed,
+            self.pos[1] 
+            )
 
     def draw(self):
         self.screen.blit(self.top, self.top_pos)
         self.screen.blit(self.bottom, self.bottom_pos)
         self.screen.blit(self.left, self.left_pos)
 
+    def colides_with_hook(self, hook: HookTip):
+        overlabs = None
+        top_mask = pygame.mask.from_surface(self.top)
+        bottom_mask = pygame.mask.from_surface(self.bottom)
+        left_mask = pygame.mask.from_surface(self.left)
 
-target = TargetObject(screen, (100, 100))
+        if hook.hook_overlapls(top_mask, self.top_pos):
+            overlabs = hook.hook_overlapls(top_mask, self.top_pos)
+        elif hook.hook_overlapls(bottom_mask, self.bottom_pos):
+            overlabs = hook.hook_overlapls(bottom_mask, self.bottom_pos)
+        elif hook.hook_overlapls(left_mask, self.left_pos):
+            overlabs = hook.hook_overlapls(left_mask, self.left_pos)
+        return overlabs
 
+
+target = TargetObject(screen, (100, 100), x_speed=2)
+hook_tip = HookTip(screen, (250, 50), 3,  speed=0.1)
 
 def main():
     run = True
     while run:
         timer.tick(fps)
-        screen.fill('black')
+        if target.colides_with_hook(hook_tip):
+            screen.fill('blue')
+        else:
+            screen.fill('black')
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -74,7 +99,11 @@ def main():
         
         target.draw()
         target.update_state()
-    
+
+        mouse_pos = pygame.mouse.get_pos()
+        hook_tip.pos = mouse_pos
+
+        hook_tip.draw()
 
         pygame.display.flip()
 
