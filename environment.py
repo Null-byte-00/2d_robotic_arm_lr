@@ -10,10 +10,10 @@ class Environment:
         self.timer = pygame.time.Clock()
         self.fps = 60
 
-        self.constant_joint = ConstantJoint(screen, (250, 50), 1)
-        self.moving_joint = MovingJoint(screen, (310, 110), 2)
-        self.hook_tip = HookTip(screen, (300, 50), 3,  speed=0.1)
-        self.stand = Stand(screen, 20, self.hook_tip)
+        self.constant_joint = ConstantJoint(screen, (330, 50), 1)
+        self.moving_joint = MovingJoint(screen, (350, 150), 2, bounce_stop=0)
+        self.hook_tip = HookTip(screen, (350, 50), 3,  speed=0.1, bounce_stop=0)
+        self.stand = Stand(screen, 20, self.hook_tip, height=70, width=70)
         self.target_object = TargetObject(screen, (300, 10), self.hook_tip)
         self.target_object.add_stand(self.stand)
 
@@ -32,10 +32,16 @@ class Environment:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RIGHT:
                         if user_control:
-                            self.moving_joint.speed -= 0.1
+                            self.moving_joint.speed -= 0.03
                     elif event.key == pygame.K_LEFT:
                         if user_control:
-                            self.moving_joint.speed += 0.1
+                            self.moving_joint.speed += 0.03
+                    elif event.key == pygame.K_d:
+                        if user_control:
+                            self.hook_tip.speed -= 0.03
+                    elif event.key == pygame.K_a:
+                        if user_control:
+                            self.hook_tip.speed += 0.03
 
             self.screen.fill('black')
             self.constant_joint.draw()
