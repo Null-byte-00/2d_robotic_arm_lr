@@ -1,6 +1,6 @@
 import pygame
 from hook import HookTip
-import math
+
 
 pygame.init()
 
@@ -14,7 +14,8 @@ timer = pygame.time.Clock()
 
 
 class Stand:
-    def __init__(self, screen, x_pos, height=100, width=100, color='red') -> None:
+    def __init__(self, screen, x_pos, hook, height=100, width=100, color='red') -> None:
+        self.hook = hook
         self.screen = screen
         self.color = color
         self.x_pos = x_pos
@@ -31,7 +32,8 @@ class Stand:
 
 
 class TargetObject:
-    def __init__(self, screen, pos, length=30, thicness=100, y_speed=0.0,x_speed=0.0, retention=0.99, color='green') -> None:
+    def __init__(self, screen, pos, hook, length=30, thicness=100, y_speed=0.0,x_speed=0.0, retention=0.99, color='green') -> None:
+        self.hook = hook
         self.color = color
         self.retention = retention
         self.x_speed = x_speed
@@ -43,6 +45,9 @@ class TargetObject:
         self.top = pygame.Surface((thicness, length))
         self.bottom = pygame.Surface((thicness, length))
         self.left = pygame.Surface((length, thicness))
+        self.grab_height = self.pos[1]
+        self.hook_point = (self.hook.pos[0] - 35,
+                           self.hook.pos[1] + 150)
         self.stands = []
 
         self.top.fill(color)
@@ -57,17 +62,38 @@ class TargetObject:
         self.left_pos = (self.pos[0], self.pos[1] - 30)
         self.check_gravity()
         self.check_x_force()
+        self.hook_point = (self.hook.pos[0] - 35,
+                           self.hook.pos[1] + 150)
+        self.grab_height = self.pos[1]
+        if self.grab_height - 20 < self.hook_point[1] < self.grab_height + 20:
+            if self.pos[0] < self.hook_point[0] < self.pos[0] + 100:
+                self.y_speed = -2
+        
+        if self.pos[0] - 30 < self.hook_point[0] < self.pos[0] - 20:
+            if self.pos[1] < self.hook_point[1] < self.pos[1] + 100:
+                self.x_speed = -2
 
     def check_gravity(self):
         for stand in self.stands:
-            print(self.pos[1],HEIGHT, stand.height )
-            if self.bottom_pos[1] + 32.7 > HEIGHT - stand.height and stand.x_pos < self.pos[0] < stand.x_pos + stand.width:
+            if self.bottom_pos[1] + 32.7 > HEIGHT - stand.height and stand.x_pos - stand.width < self.pos[0] < stand.x_pos + stand.width:
+                if self.y_speed > 0:
+                    return
+        
+        if self.grab_height - 5 < self.hook_point[1] < self.grab_height + 5:
+            if self.pos[0] < self.hook_point[0] < self.pos[0] + 100:
                 return
+        
         if self.pos[1] < HEIGHT - 90:
             self.y_speed += GRAVITY
             self.pos = (self.pos[0], self.pos[1] + self.y_speed)
+        elif self.y_speed < 0:
+            self.pos = (self.pos[0], self.pos[1] + self.y_speed)
 
     def check_x_force(self):
+        for stand in self.stands:
+            if self.bottom_pos[1] + 32.7 > HEIGHT - stand.height and stand.x_pos < self.pos[0] < stand.x_pos + stand.width:
+                return
+
         self.x_speed = self.x_speed * self.retention
         self.pos = (
             self.pos[0] + self.x_speed,
@@ -82,6 +108,9 @@ class TargetObject:
         self.screen.blit(self.top, self.top_pos)
         self.screen.blit(self.bottom, self.bottom_pos)
         self.screen.blit(self.left, self.left_pos)
+        #pygame.draw.circle(self.screen, 'purple', self.hook_point, 10)
+        #pygame.draw.circle(self.screen, 'purple', (200, self.grab_height), 10)
+        pygame.draw.circle(self.screen, 'purple', (self.pos[0], 200), 10)
 
     def colides_with_hook(self, hook: HookTip):
         overlabs = None
@@ -101,9 +130,10 @@ class TargetObject:
         self.stands.append(stand)
 
 
-target = TargetObject(screen, (100, 100), x_speed=1.5)
+
 hook_tip = HookTip(screen, (250, 50), 3,  speed=0.1)
-stand =  Stand(screen, 100)
+target = TargetObject(screen, (100, 100),hook_tip, x_speed=1.5)
+stand =  Stand(screen, 100, hook_tip)
 target.add_stand(stand)
 
 def main():
