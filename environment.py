@@ -13,7 +13,7 @@ class Environment:
         self.constant_joint = ConstantJoint(screen, (330, 50), 1)
         self.moving_joint = MovingJoint(screen, (350, 150), 2, bounce_stop=0)
         self.hook_tip = HookTip(screen, (350, 50), 3,  speed=0.1, bounce_stop=0)
-        self.stand = Stand(screen, 20, self.hook_tip, height=70, width=70)
+        self.stand = Stand(screen, 20, self.hook_tip, height=90, width=90)
         self.target_object = TargetObject(screen, (300, 10), self.hook_tip)
         self.target_object.add_stand(self.stand)
 
