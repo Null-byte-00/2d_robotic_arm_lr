@@ -7,7 +7,7 @@ from rewards import get_environ_reward
 
 
 class Environment:
-    def __init__(self, screen, step_every=10) -> None:
+    def __init__(self, screen, step_every=30) -> None:
         self.screen = screen
         self.agent = Agent(self)
         self.timer = pygame.time.Clock()
@@ -70,7 +70,7 @@ class Environment:
                 self.agent.update_environment(self)
                 next_state = self.agent.get_state()
                 reward = get_environ_reward(self)
-                print(reward)
+                #print(reward)
                 self.agent.model.train_critic(action, self.previous_state, next_state, reward)
                 self.agent.model.train_actor(self.previous_state)
                 self.agent.model.soft_update()

@@ -68,12 +68,13 @@ class Model(nn.Module):
         out = self.critic(critic_input)
         loss = self.loss(out, target_q)
         loss.backward()
-        #print(loss)
+        print(f"critic loss {loss.item()}")
         self.C_optim.zero_grad()
         self.C_optim.step()
 
     def train_actor(self, state):
         loss = -self.critic(torch.cat([state, self.actor(state)]))
         self.A_optim.zero_grad()
+        print(f"actor loss: {loss.item()}")
         loss.backward()
         self.A_optim.step()

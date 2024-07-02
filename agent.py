@@ -10,7 +10,7 @@ class Agent:
         self.screen = pygame.display.set_mode((500, 500))
         self.environ = environ
         self.time = 0
-        self.stablizer = 0.0001
+        self.stablizer = 0.001
     
     def update_environment(self,env):
         self.environ = env
