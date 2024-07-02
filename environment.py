@@ -2,18 +2,20 @@ from joints import ConstantJoint, MovingJoint
 from hook import HookTip
 from target_object import TargetObject, Stand
 import pygame
+from agent import Agent
 
 
 class Environment:
     def __init__(self, screen) -> None:
         self.screen = screen
+        self.agent = Agent(self)
         self.timer = pygame.time.Clock()
         self.fps = 60
 
         self.constant_joint = ConstantJoint(screen, (330, 50), 1)
         self.moving_joint = MovingJoint(screen, (350, 150), 2, bounce_stop=0)
         self.hook_tip = HookTip(screen, (350, 50), 3,  speed=0.1, bounce_stop=0)
-        self.stand = Stand(screen, 20, self.hook_tip, height=90, width=90)
+        self.stand = Stand(screen, 20, self.hook_tip, height=85, width=85)
         self.target_object = TargetObject(screen, (300, 10), self.hook_tip)
         self.target_object.add_stand(self.stand)
 
@@ -23,6 +25,7 @@ class Environment:
 
     def run(self, user_control=False):
         run = True
+
         while run:
             self.timer.tick(self.fps)
 
@@ -42,6 +45,8 @@ class Environment:
                     elif event.key == pygame.K_a:
                         if user_control:
                             self.hook_tip.speed += 0.03
+            state = self.agent.get_state()
+            action = self.agent.get_action()
 
             self.screen.fill('black')
             self.constant_joint.draw()
@@ -55,6 +60,14 @@ class Environment:
             self.target_object.draw()
             self.target_object.update_state()
 
+            if not user_control:
+                self.agent.update_environment(self)
+                next_state = self.agent.get_state()
+
+                joint_speed, hook_speed = self.agent.get_action()
+                self.moving_joint.speed = joint_speed.item()
+                self.hook_tip.speed = hook_speed.item()
+
             pygame.display.flip()
 
         pygame.quit()
@@ -67,4 +80,4 @@ if __name__ == '__main__':
     pygame.init()
     screen = pygame.display.set_mode((500, 500))
     env = Environment(screen)
-    env.run(user_control=True)
+    env.run(user_control=False)
