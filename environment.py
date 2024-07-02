@@ -3,13 +3,16 @@ from hook import HookTip
 from target_object import TargetObject, Stand
 import pygame
 from agent import Agent
+from rewards import get_environ_reward
 
 
 class Environment:
-    def __init__(self, screen) -> None:
+    def __init__(self, screen, step_every=10) -> None:
         self.screen = screen
         self.agent = Agent(self)
         self.timer = pygame.time.Clock()
+        self.timestep = 0
+        self.step_every = step_every
         self.fps = 60
 
         self.constant_joint = ConstantJoint(screen, (330, 50), 1)
@@ -21,6 +24,7 @@ class Environment:
 
         self.hook_tip.connect(self.moving_joint)
         self.moving_joint.connect(self.constant_joint)
+        self.previous_state = self.agent.get_state()
     
 
     def run(self, user_control=False):
@@ -60,14 +64,24 @@ class Environment:
             self.target_object.draw()
             self.target_object.update_state()
 
-            if not user_control:
+            #reward = get_environ_reward(self)
+            #print(reward)
+            if not user_control and self.timestep % self.step_every == 0:
                 self.agent.update_environment(self)
                 next_state = self.agent.get_state()
+                reward = get_environ_reward(self)
+                print(reward)
+                self.agent.model.train_critic(action, self.previous_state, next_state, reward)
+                self.agent.model.train_actor(self.previous_state)
+                self.agent.model.soft_update()
+                self.previous_state = next_state
 
-                joint_speed, hook_speed = self.agent.get_action()
-                self.moving_joint.speed = joint_speed.item()
-                self.hook_tip.speed = hook_speed.item()
-
+                joint_speed, hook_speed =  self.agent.get_action()
+                self.moving_joint.speed += joint_speed.item()
+                self.hook_tip.speed += hook_speed.item()
+                #print(self.moving_joint.speed, self.hook_tip.speed)
+            
+            self.timestep += 1
             pygame.display.flip()
 
         pygame.quit()

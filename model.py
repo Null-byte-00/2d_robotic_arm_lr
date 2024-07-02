@@ -30,7 +30,7 @@ class Critic(nn.Module):
 
 
 class Model(nn.Module):
-    def __init__(self,num_inputs=8, num_outputs=2,tau=0.001, gamma=0.95, device="cpu", *args, **kwargs) -> None:
+    def __init__(self,num_inputs=8, num_outputs=2,tau=0.001, gamma=0.99, device="cpu", *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.device = device
         self.tau = torch.tensor(tau).to(device)
@@ -51,28 +51,29 @@ class Model(nn.Module):
 
         self.loss = nn.MSELoss()
 
-        self.A_optim = SGD(self.actor.parameters() ,lr=0.001)
-        self.C_optim = SGD(self.critic.parameters(),lr=0.001)
+        self.A_optim = SGD(self.actor.parameters() ,lr=0.0000001)
+        self.C_optim = SGD(self.critic.parameters(),lr=0.0000001)
 
     def soft_update(self):
         for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
-            target_param.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
+            target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
         for param, target_param in zip(self.critic.parameters(), self.critic_target.parameters()):
-            target_param.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
+            target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
 
     def train_critic(self, action, state, next_state, reward, done=False):
-        self.C_optim.zero_grad()
         with torch.no_grad():
             next_action = self.actor_target(next_state)
-            target_q = reward + (1 - done) * self.gamma * self.critic_target(next_state, next_action)
-        critic_input = torch.cat(action, state)
+            target_q = reward + (1 - done) * self.gamma * self.critic_target(torch.cat([next_state, next_action]))
+        critic_input = torch.cat((action, state))
         out = self.critic(critic_input)
         loss = self.loss(out, target_q)
         loss.backward()
+        #print(loss)
+        self.C_optim.zero_grad()
         self.C_optim.step()
 
     def train_actor(self, state):
-        loss = -self.critic(state, self.actor(state))
+        loss = -self.critic(torch.cat([state, self.actor(state)]))
         self.A_optim.zero_grad()
         loss.backward()
         self.A_optim.step()
